@@ -1,0 +1,20 @@
+from agent.data import load_secom
+
+df = load_secom()
+sensors = df.filter(like="sensor_")
+missing = sensors.isna().mean()
+nunique = sensors.nunique(dropna=True)
+
+print("Rows:", len(df))
+print("Sensor columns:", sensors.shape[1])
+print("Label counts:", df["label"].value_counts().to_dict())
+print(f"Fail share: {(df['label'] == 'fail').mean():.2%}")
+print("Date range:", df["timestamp"].min(), "->", df["timestamp"].max())
+print("Timestamps sorted:", df["timestamp"].is_monotonic_increasing)
+print("Runs per month:", df["timestamp"].dt.to_period("M").value_counts().sort_index().to_dict())
+print(f"Overall missing share (cells): {sensors.isna().to_numpy().mean():.2%}")
+print("Sensors with any missing:", int((missing > 0).sum()))
+print("Sensors with >50% missing:", int((missing > 0.5).sum()))
+print("Top 5 missing:", missing.sort_values(ascending=False).head(5).round(4).to_dict())
+print("Constant sensors (one distinct non-null value):", int((nunique == 1).sum()))
+print("All-NaN sensors:", int((nunique == 0).sum()))
